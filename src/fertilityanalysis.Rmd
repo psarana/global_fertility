@@ -1,0 +1,63 @@
+---
+title: "Global Fertility"
+author: "Parveen Sarana"
+date: "January 23, 2017"
+output: github_document
+---
+
+
+[Where you can get the original data](https://www.gapminder.org/data/)
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+```{r}
+library(tidyverse)
+library(gapminder)
+library(ggplot2)
+library(viridis)
+
+#Get the data
+fertility_data <- read.csv("../data/indicator undata total_fertility-2.csv")
+
+#Remove Countries with no data across all years
+fertility_data <- fertility_data[complete.cases(fertility_data),]
+head(fertility_data)
+
+#Looking only at 2015
+fertility_data2015 <- fertility_data[,c("Total.fertility.rate", "X2007")]
+
+gapminder2015 <- gapminder %>% 
+  filter(year == 2007)
+
+#Combine the two data sets
+fulldata2015 <- (inner_join(gapminder2015,fertility_data2015, by = c("country" = "Total.fertility.rate")))
+fulldata2015 %>%  View
+
+#Get the top 10
+top10gdppercap <- head(fulldata2015[ order(fulldata2015$gdpPercap, decreasing=TRUE), ], n = 10L)
+top10gdppercap$X2007 <- factor(top10gdppercap$X2007, levels = top10gdppercap$X2007[order(top10gdppercap $gdpPercap )])
+
+bottom10gdppercap <- head(fulldata2015[ order(fulldata2015$gdpPercap, decreasing=FALSE), ], n = 10L)
+bottom10gdppercap$X2007 <- factor(top10gdppercap$X2007, levels = top10gdppercap$X2007[order(top10gdppercap $gdpPercap )])
+
+legend_order = top10gdppercap$X2007[order(top10gdppercap $gdpPercap)]
+
+top10gdppercap  %>%
+  ggplot(aes(x= X2007, y = gdpPercap)) +
+  geom_point(size=4, aes(colour = factor(country))) +
+    theme_bw() +
+  scale_color_viridis(discrete=TRUE) +
+scale_fill_discrete(breaks=c("Iceland", "Canada", "Netherlands", "Switzerland", "Hong Kong, China", "Ireland", "United States", "Singapore", "Kuwait", "Norway"))
+
+bottom10gdppercap   %>%
+  ggplot(aes(x= X2007, y = gdpPercap)) +
+  geom_point(size=4, aes(colour = factor(country))) +
+    scale_color_viridis(discrete=TRUE) +
+    theme_bw() +
+scale_fill_discrete(breaks=legend_order)
+
+```
+
+
